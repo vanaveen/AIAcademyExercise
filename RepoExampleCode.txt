@@ -1,0 +1,59 @@
+using Deloitte.GPS.Integration.Common;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.Runtime.Caching;
+
+namespace Federal.UI.ClassLibrary.Configuration
+{
+    public static class FifHubConfiguration
+    {
+        private static readonly object Lock = new object();
+
+        /// <summary>
+        ///     Get Application Settings
+        /// </summary>
+        /// <returns></returns>
+        public static Dictionary<string, string> GetSettings()
+        {
+            var memCache = MemoryCache.Default;
+            var settings = (Dictionary<string, string>)memCache["_appSettings"];
+
+            if (settings != null)
+                return settings;
+
+            lock (Lock)
+            {
+                settings = GetAppSettings();
+                memCache.Add("_appSettings", settings, DateTimeOffset.UtcNow.AddMinutes(30));
+                return settings;
+            }
+        }
+
+        /// <summary>
+        ///     Get Application Settings
+        /// </summary>
+        /// <returns></returns>
+        private static Dictionary<string, string> GetAppSettings()
+        {
+            var settings = new Dictionary<string, string>();
+
+            var settingsCommand = new SqlCommand();
+            var helperobject = HelperFactory.GetHelperObject("sql");
+            var settingsDataSet = helperobject.ExecuteDataSet(
+                ConfigurationManager.ConnectionStrings["HangfireConnection"].ConnectionString, settingsCommand,
+                CommandType.StoredProcedure,
+                "dbo.SP_GetApplicationSettings");
+
+            var settingsDataTable = settingsDataSet?.Tables[0];
+
+            if (settingsDataTable == null || settingsDataTable.Rows.Count == 0) return settings;
+
+            foreach (DataRow dr in settingsDataTable.Rows) settings.Add(dr["Key"].ToString(), dr["Value"].ToString());
+
+            return settings;
+        }
+    }
+}
