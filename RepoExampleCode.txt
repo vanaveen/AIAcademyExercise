@@ -45,7 +45,7 @@ namespace Federal.UI.ClassLibrary.Configuration
             var settingsDataSet = helperobject.ExecuteDataSet(
                 ConfigurationManager.ConnectionStrings["HangfireConnection"].ConnectionString, settingsCommand,
                 CommandType.StoredProcedure,
-                "dbo.SP_GetApplicationSettings");
+                "dbo.SP_GetApplication");
 
             var settingsDataTable = settingsDataSet?.Tables[0];
 
