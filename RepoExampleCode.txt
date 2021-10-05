@@ -16,6 +16,7 @@ namespace Federal.UI.ClassLibrary.Configuration
         ///     Get Application Settings
         /// </summary>
         /// <returns></returns>
+        /// This is the GITHUB example code
         public static Dictionary<string, string> GetSettings()
         {
             var memCache = MemoryCache.Default;
